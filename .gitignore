@@ -1,0 +1,49 @@
+# Ignore virtual environment
+.venv/
+
+# Ignore old files and directories
+old/
+
+# Ignore data directory
+data/
+
+# Ignore lock files
+*.lock
+
+# Ignore TOML files
+*.toml
+
+# Ignore compiled Python files
+__pycache__/
+*.py[cod]
+
+# Ignore logs
+*.log
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE specific files
+.vscode/
+.idea/
+
+# Ignore environment files
+.env
+
+# Ignore package directories
+node_modules/
+bower_components/
+
+# Ignore build outputs
+build/
+dist/
+
+# Ignore coverage reports
+htmlcov/
+.coverage
+
+# Ignore temporary files
+*.tmp
+*.swp
+*~
