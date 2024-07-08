@@ -21,9 +21,17 @@ for dir in "$SOURCE_DIR"/*; do
     if [ -d "$dir" ]; then
         # Convert directory name to lowercase and remove spaces
         new_name=$(basename "$dir" | tr '[:upper:]' '[:lower:]' | tr ' ' '_')
-        cp -R "$dir" "$DESTINATION_DIR/$new_name"
-        echo "Contents from '$(basename "$dir")' have been copied to '$DESTINATION_DIR/$new_name'"
+        
+        # Delete the destination folder if it exists and recreate it
+        if [ -d "$DESTINATION_DIR/$new_name" ]; then
+            rm -rf "$DESTINATION_DIR/$new_name"
+        fi
+        mkdir -p "$DESTINATION_DIR/$new_name"
+        
+        # Copy contents
+        cp -R "$dir"/* "$DESTINATION_DIR/$new_name"
+        echo "Contents from '$(basename "$dir")' have been reloaded in '$DESTINATION_DIR/$new_name'"
     fi
 done
 
-echo "All subfolders from '$SOURCE_DIR' have been copied to the '$DESTINATION_DIR' directory with lowercase names and spaces removed"
+echo "All subfolders from '$SOURCE_DIR' have been processed in the '$DESTINATION_DIR' directory with lowercase names and spaces removed"

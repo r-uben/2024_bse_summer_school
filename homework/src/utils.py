@@ -3,6 +3,8 @@
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import f1_score, precision_score, recall_score
+from sklearn.model_selection import train_test_split
 
 from nltk.stem import WordNetLemmatizer
 from nltk.stem import SnowballStemmer
@@ -11,6 +13,7 @@ from nltk.stem import PorterStemmer
 import nltk
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 import spacy
 import re
 #this requires spacy to be installed
@@ -85,3 +88,46 @@ class Utils:
         for w in vocab:
             vector.append(tokens.count(w))
         return vector
+    
+
+
+    @staticmethod   
+    def fit(model, X, y):
+        model.fit(X, y)
+
+    @staticmethod
+    def predict(model, X):
+        return model.predict(X)
+
+    @staticmethod
+    def metrics(y_true, y_pred):
+        f1 = f1_score(y_true, y_pred, average='weighted')
+        precision = precision_score(y_true, y_pred, average='weighted', zero_division=0)
+        recall = recall_score(y_true, y_pred, average='weighted')
+        return {'f1': f1, 'precision': precision, 'recall': recall}
+
+    @staticmethod
+    def get_train_sample(train_subset, test_size, seed):
+        X_train, X_val, y_train, y_val = train_test_split(
+            train_subset['text'],
+            train_subset['label'],
+            test_size=test_size,
+            random_state=seed
+        )
+        return X_train, X_val, y_train, y_val
+
+
+    @staticmethod
+    def plot_metrics(results):
+        fig = go.Figure()
+
+        for metric in results.metric.unique():
+            df =results[results.metric==metric]
+            fig.add_trace(go.Scatter(
+                x=df['percentage'],
+            y=df['value'],
+            mode='lines+markers',
+                name=metric
+            ))
+
+        return fig

@@ -53,3 +53,4 @@ htmlcov/
 # Ignore .DS_Store files
 .DS_Store
 
+notes/
