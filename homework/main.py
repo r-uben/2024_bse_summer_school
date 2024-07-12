@@ -156,7 +156,7 @@ if __name__ == "__main__":
     fig_name = "metrics.png"
 
     baseline_results = tasks.baseline()
-    fig = Utils.plot_metrics_comparison_comparison(baseline_results, label = "Baseline", color='blue', legend=False)
+    fig = Utils.plot_metrics_comparison(baseline_results, label = "Baseline", color='blue', legend=False)
     fig.savefig(Utils.fig_path(fig_name), format="png")
 
 
@@ -194,7 +194,7 @@ if __name__ == "__main__":
     num_samples = 50
     zeroshot_results = tasks.zero_shot(num_samples, temperature)
 
-    fig = Utils.plot_metrics_comparison(zeroshot_results, fig=fig, label=f"Zero-Shot (num_samples={num_samples}_temperature={temperature})", color='darkpurple', legend=True)
+    fig = Utils.plot_metrics_comparison(zeroshot_results, fig=fig, label=f"Zero-Shot (num_samples={num_samples}_temperature={temperature})", color='darkviolet', legend=True)
     fig.savefig(Utils.fig_path(fig_name), format="png")
 
 
