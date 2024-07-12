@@ -1,15 +1,14 @@
 from collections import Counter
 from datasets import load_dataset
 from wordcloud import WordCloud
-from plotly.subplots import make_subplots
 from nltk.corpus import stopwords
 
 import nltk
-nltk.download('stopwords')
 
 
 import pandas as pd
 import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 
 class Data: 
 
@@ -17,6 +16,10 @@ class Data:
        self.__ds = ds
        self.__train = None
        self.__test = None
+
+       if not nltk.data.find('corpora/stopwords.zip'):
+           nltk.download('stopwords')
+
 
     @property
     def default_stopwords(self):
@@ -79,7 +82,7 @@ class Data:
 
         return stop_words
 
-    def generate_word_clouds(self, additional_stopwords=None, frequency_threshold=0.001):
+    def plot_word_clouds(self, additional_stopwords=None, frequency_threshold=0.001):
 
         # Get optimized stopwords
         stop_words = self.get_optimized_stopwords(frequency_threshold)
@@ -89,11 +92,12 @@ class Data:
             stop_words.update(additional_stopwords)
 
         # Create a 2x3 subplot figure
-        fig = make_subplots(rows=2, cols=3, subplot_titles=[self.label_names[label] for label in range(6)])
+        fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+        fig.suptitle("Word Clouds for Each Emotion", fontsize=24)
 
         for i, label in enumerate(range(6)):
-            row = i // 3 + 1
-            col = i % 3 + 1
+            row = i // 3
+            col = i % 3
 
             # Filter texts for the current label
             texts = ' '.join(self.train[self.train['label'] == label]['text'])
@@ -103,35 +107,23 @@ class Data:
                                   stopwords=stop_words, min_font_size=10, 
                                   max_words=100, collocations=False).generate(texts)
             
-            # Convert the word cloud to an image
-            img = wordcloud.to_image()
-            
-            # Add the image to the subplot
-            fig.add_trace(
-                go.Image(z=img),
-                row=row, col=col
-            )
+            # Plot the word cloud
+            axes[row, col].imshow(wordcloud, interpolation='bilinear')
+            axes[row, col].set_title(self.label_names[label])
+            axes[row, col].axis('off')
 
-        fig.update_layout(height=1000, width=1500, title_text="Word Clouds for Each Emotion", title_font_size=24)
-        fig.update_xaxes(showticklabels=False)
-        fig.update_yaxes(showticklabels=False)
-        fig.show()
-
+        fig.tight_layout(rect=[0, 0, 1, 0.96])
+        return fig
     def plot_label_distribution(self):
         # Count the occurrences of each label
         label_counts = Counter(self.train['label'])
 
-        # Create a bar plot
-        fig = go.Figure(data=[go.Bar(
-            x=list(label_counts.keys()),
-            y=list(label_counts.values())
-        )])
+        # Create a bar plot using matplotlib
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.bar(label_counts.keys(), label_counts.values())
 
-        fig.update_layout(
-            title='Distribution of Labels in the Training Set',
-            xaxis_title='Label',
-            yaxis_title='Count',
-            height=500,
-            width=800
-        )
-        fig.show()
+        ax.set_title('Distribution of Labels in the Training Set')
+        ax.set_xlabel('Label')
+        ax.set_ylabel('Count')
+
+        return fig

@@ -24,6 +24,7 @@ class BERT:
         print(f"Using device: {self.device}")
         
         self.tokenizer = BertTokenizer.from_pretrained(model_name)
+        self.__models = {}
         self.model_name = model_name
         self.num_labels = num_labels
         self.num_epochs = num_epochs
@@ -38,6 +39,12 @@ class BERT:
         self.X_train, self.X_val, y_train, y_val = Utils.get_train_sample(self.data.train, self.__test_size, self.__seed)
         self.y_train = y_train.tolist() if hasattr(y_train, 'tolist') else y_train
         self.y_val = y_val.tolist() if hasattr(y_val, 'tolist') else y_val
+
+
+    @property
+    def models(self):
+        return self.__models
+    
 
     @property
     def percentages(self):
@@ -137,18 +144,28 @@ class BERT:
         )
         return DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
 
-    def get_results(self):
+    def get_results(self, data=None, model=None):
+        if data is None:
+            data = self.data
         results = {}
         val_dataloader = self.prepare_data(self.X_val, self.y_val)
+        if model is None:
+        
+            for percentage in tqdm(self.percentages, desc="Processing percentages"):
+                train_subset = data.train.sample(frac=percentage, random_state=self.__seed)
+                X_train_subset = train_subset['text']
+                y_train_subset = train_subset['label'].tolist()
+                
+                train_dataloader = self.prepare_data(X_train_subset, y_train_subset)
+                
+                self.__models[percentage] = self.fit(train_dataloader, val_dataloader)
+                model = self.__models[percentage]
 
-        for percentage in tqdm(self.percentages, desc="Processing percentages"):
-            train_subset = self.data.train.sample(frac=percentage, random_state=self.__seed)
-            X_train_subset = train_subset['text']
-            y_train_subset = train_subset['label'].tolist()
-            
-            train_dataloader = self.prepare_data(X_train_subset, y_train_subset)
-            
-            model = self.fit(train_dataloader, val_dataloader)
+                y_pred = self.predict(model, val_dataloader)
+                results[percentage] = Utils.metrics(self.y_val, y_pred)
+        else:
+            val_dataloader = self.prepare_data(data.train['text'], data.train['label'])
             y_pred = self.predict(model, val_dataloader)
             results[percentage] = Utils.metrics(self.y_val, y_pred)
+
         return results

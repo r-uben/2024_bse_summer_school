@@ -23,24 +23,21 @@ class Baseline:
     @property
     def results(self):
         if self.__results is None:
-            results = self.get_results()
-            results_df = pd.DataFrame.from_dict(results, orient='index')
-            results_df = results_df.reset_index().rename(columns={'index': 'percentage'})
-            results_df['percentage'] = results_df['percentage'] * 100
-            results_df = results_df.melt(id_vars=['percentage'], var_name='metric', value_name='value')
-            results_df = results_df.sort_values(['percentage', 'metric'])
-            results_df = results_df.reset_index(drop=True)
-            self.__results = results_df
+            self.__results = self.get_results()
         return self.__results
-
-    def get_results(self):
+    
+    def get_results(self, data=None, model=None):
+        if data is None:
+            data = self.data
+        if model is None:
+            model = self.model
         results = {}
         for percentage in tqdm(self.percentages, desc="Processing percentages"):
-            train_subset = self.data.train.sample(frac=percentage, random_state=self.__seed)
+            train_subset = data.train.sample(frac=percentage, random_state=self.__seed)
             X_train, X_val, y_train, y_val = Utils.get_train_sample(train_subset, self.__test_size, self.__seed)
             X_train = self.vectorizer.fit_transform(X_train)
             X_val = self.vectorizer.transform(X_val)
-            Utils.fit(self.model, X_train, y_train)
-            y_pred = Utils.predict(self.model, X_val)
+            Utils.fit(model, X_train, y_train)
+            y_pred = Utils.predict(model, X_val)
             results[percentage] = Utils.metrics(y_val, y_pred)
-        return results
+        return Utils.convert_results_to_dataframe(results)

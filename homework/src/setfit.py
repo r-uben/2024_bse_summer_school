@@ -121,7 +121,7 @@ class SetFit():
         
         # Add error handling
         try:
-            valid_preds = self.__classifier.model.predict(split_sample['valid']['text'].to_list())
+            valid_preds = self.__classifier.model.predict(split_sample['valid']['text'])
             metrics = Utils.metrics(split_sample['valid']['label'], valid_preds)
             results[percentage] = metrics
         except Exception as e:
