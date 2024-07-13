@@ -155,6 +155,7 @@ if __name__ == "__main__":
     ### TASK 1: BASELINE IMPLEMENTATION
     fig_name = "metrics.png"
 
+    tasks.set_RELOAD(False)
     baseline_results = tasks.baseline()
     fig = Utils.plot_metrics_comparison(baseline_results, label = "Baseline", color='blue', legend=False)
     fig.savefig(Utils.fig_path(fig_name), format="png")
@@ -162,6 +163,7 @@ if __name__ == "__main__":
 
     ### TASK 2: BERT IMPLEMENTATION
 
+    tasks.set_RELOAD(True)
     bert_results = tasks.bert()
     fig = Utils.plot_metrics_comparison(bert_results, fig=fig, label="BERT", color='orange', legend=False)
     fig.savefig(Utils.fig_path(fig_name), format="png")

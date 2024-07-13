@@ -20,6 +20,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import os
 import spacy
+import torch
 import re
 #this requires spacy to be installed
 sp = spacy.load('en_core_web_sm')
@@ -153,13 +154,16 @@ class Utils:
         return {'f1': f1, 'precision': precision, 'recall': recall, 'accuracy': accuracy}
 
     @staticmethod
-    def get_train_sample(train_subset, test_size, seed):
+    def get_train_sample(train_subset,
+                        test_size, 
+                        seed):
         X_train, X_val, y_train, y_val = train_test_split(
             train_subset['text'],
             train_subset['label'],
             test_size=test_size,
-            random_state=seed
+            random_state=seed,
         )
+
         return X_train, X_val, y_train, y_val
 
 
@@ -246,3 +250,37 @@ class Utils:
         return fig
 
 
+
+    @staticmethod
+    def preprocess_data(data, tokenizer, percentage=0.1):
+        
+        # SPLIT THE DATA
+        if percentage < 1.0:
+            data, _ = train_test_split(
+                data,
+            test_size=1-percentage,
+            stratify=data['label']
+            )
+
+        # TOKENIZE THE DATA
+        encodings = tokenizer(
+            data['text'].tolist(), 
+            truncation=True, 
+            padding=True, 
+            max_length=128
+        )
+
+        # GET THE LABELS
+        labels = data['label'].tolist()
+
+        return encodings, labels
+    
+
+    @staticmethod
+    def get_device():
+        if torch.backends.mps.is_available():
+            return torch.device("mps")
+        elif torch.cuda.is_available():
+            return torch.device("cuda")
+        else:
+            return torch.device("cpu")
